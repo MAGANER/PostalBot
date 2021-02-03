@@ -9,6 +9,7 @@ class PostmanBot(Bot):
         self.curr_message_id = -1
         self.last_message_id = -1
         self.mail = None
+        self.start_command_recived = False
         self.default_mail_port_number = 587
     def get_service(self,login):
         mail_ch = login.index('@')
@@ -22,7 +23,11 @@ class PostmanBot(Bot):
     def update(self):
         self.last_update = self.get_last_update()
 
-        if "message" in self.last_update.keys():
+        if "message" in  self.last_update.keys() and not self.start_command_recived:
+            if self.last_update['message']['text'] == "/begin":
+                self.start_command_recived = True
+
+        if "message" in self.last_update.keys() and self.start_command_recived:
             self.last_chat_id = self.last_update['message']['chat']['id']
             self.curr_message_id= self.last_update['message']['message_id']
             text = self.last_update['message']['text']
@@ -30,16 +35,20 @@ class PostmanBot(Bot):
             not_repeat = self.last_message_id != self.curr_message_id
             if "/login" in text and not_repeat:
                 args = text.split(' ')
-                login = args[1]
-                password = args[2]
-                service = self.get_service(login)
-                if service == '':
-                    self.send_message(self.last_chat_id,"incorrect e-mail!")
-                    self.last_message_id = self.curr_message_id
+                if len(args) == 3:
+                    login = args[1]
+                    password = args[2]
+                    service = self.get_service(login)
+                    if service == '':
+                       self.send_message(self.last_chat_id,"incorrect e-mail!")
+                       self.last_message_id = self.curr_message_id
+                    else:
+                        print(f"smtp.{service}")
+                        self.mail = mail(f"smtp.{service}",self.default_mail_port_number,login,password)
+                        self.send_message(self.last_chat_id,"successful login!")
+                        self.last_message_id = self.curr_message_id
                 else:
-                    print(f"smtp.{service}")
-                    self.mail = mail(f"smtp.{service}",self.default_mail_port_number,login,password)
-                    self.send_message(self.last_chat_id,"successful login!")
+                    self.send_message(self.last_chat_id,"not enough data to login!")
                     self.last_message_id = self.curr_message_id
 
             
