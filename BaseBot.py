@@ -15,8 +15,6 @@ class Bot:
 
 		if len(get_result) > 0:
 			last_update = get_result[-1]
-		else:
-			last_update = get_result[len(get_result)]
 
 		return last_update
 	

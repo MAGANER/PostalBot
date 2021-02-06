@@ -1,5 +1,6 @@
 from MailProcessor import MailProcessor as mail
 from BaseBot import Bot
+import smtplib
 
 class PostmanBot(Bot):
     def __init__(self):
@@ -44,8 +45,11 @@ class PostmanBot(Bot):
                        self.last_message_id = self.curr_message_id
                     else:
                         print(f"smtp.{service}")
-                        self.mail = mail(f"smtp.{service}",self.default_mail_port_number,login,password)
-                        self.send_message(self.last_chat_id,"successful login!")
+                        try:
+                            self.mail = mail(f"smtp.{service}",self.default_mail_port_number,login,password)
+                            self.send_message(self.last_chat_id,"successful login!")
+                        except smtplib.SMTPAuthenticationError:
+                            self.send_message(self.last_chat_id,"can not login!")
                         self.last_message_id = self.curr_message_id
                 else:
                     self.send_message(self.last_chat_id,"not enough data to login!")
